@@ -1,6 +1,4 @@
 BOT Compteur de LP et Timer
-TOKEN : MTA2NTY1MDYyMjkwMjMwODk2NQ.GwR55_.-njwHW-KscbRbPImEQNDMnHdfhM4nCFityQRGs
-
 
 Fonctions :
 Plusieurs instances possibles (plusieurs matchs peuvent se dérouler en même temps) avec id unique (temporaire)
