@@ -1,0 +1,86 @@
+BOT Compteur de LP et Timer
+TOKEN : MTA2NTY1MDYyMjkwMjMwODk2NQ.GwR55_.-njwHW-KscbRbPImEQNDMnHdfhM4nCFityQRGs
+
+
+Fonctions :
+Plusieurs instances possibles (plusieurs matchs peuvent se dérouler en même temps) avec id unique (temporaire)
+gestion de Points de vie pour 2 joueurs (2 valeurs)
+historique des LP pour chaque joueur (sur le duel en cours uniquement)
+RESET à 8000
+
+Timer de 40 ou 50min (affichage dynamique serait un plus, sinon via commande)
+Alerte a moitié du temps et 5 min avant la fin du temps
+Alerte de fin de partie
+possibilité de mettre en pause
+possibilité de mettre fin avant la fin du timer
+
+Commandes :
+$play @joueur1 @joueur2 temps : lance une partie entre "joueur1" et "joueur2" avec le "temps" demandé
+$setLP @joueur {+ - /} valeur : Set les LP du joueur en paramètre "old_value" avec le calcul suivant : old_value {opérateur choisi} "valeur" 
+$reset id_jeu : remet à 8000 les LP des deux joueurs de la partie "id_jeu" sans toucher au timer
+$time id_jeu : affiche le temps de la partie "id_jeu"
+$end id_jeu : termine la partie "id_jeu" avec message de fin
+
+Messages auto :
+ATTENTION @joueur1 @joueur2 : il reste 20min
+ATTENTION @joueur1 @joueur2 : il reste 5min
+Temps écoulé !
+Fin de la partie id_jeu de @joueur1 et @joueur2 !
+
+Autorisation : 
+(optionnel)
+Uniquement les gens dans le channel vocal peuvent modifier les scores d'une partie en cours
+Actuellement, il y a un bot qui créé un salon vocal unique pour la partie et il est supprimé lorsque tout le monde est déconnecté du channel.
+Idéalement, il faudrait que les commandes du bot soient saisie dans le channel textuel associé au channel vocal unique du bot
+
+
+Exemple de commande / affichage voulu :
+$play @joueur1 @joueur2 40
+
+Temps : 40"00'
+Identifiant d'instance unique : 123
+Pseudo Joueur 1  | Pseudo Joueur 2
+8000		     |8000
+
+
+$setLP @joueur1 -1600
+
+Temps : 37"25'
+Pseudo Joueur 1  | Pseudo Joueur 2
+8000		     |8000
+6400		     |
+
+
+$setLP @joueur1 +600
+
+Temps : 30"12'
+Pseudo Joueur 1  | Pseudo Joueur 2
+8000		     |8000
+6400		     |
+7000		     |
+
+$time 123
+Partie 123 @joueur1 @joueur2 : il reste 25"23'
+
+ATTENTION @joueur1 @joueur2 : il reste 20min
+
+$setLP @joueur2 /2
+
+Temps : 05"56'
+Pseudo Joueur 1  | Pseudo Joueur 2
+8000		     |8000
+6400		     |4000
+7000		     |
+
+ATTENTION @joueur1 @joueur2 : il reste 5min
+
+$reset 123
+Points de vie remis à 8000 pour les deux joueurs
+Temps : 03"12'
+Identifiant d'instance unique : 123
+Pseudo Joueur 1  | Pseudo Joueur 2
+8000		     |8000
+
+Temps écoulé !	     
+Fin de la partie 123 de @joueur1 et @joueur2 !
+

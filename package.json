@@ -1,0 +1,14 @@
+{
+  "name": "time_wizard",
+  "version": "1.0.0",
+  "description": "bot compteur de LP et gestion du temps",
+  "main": "index.js",
+  "scripts": {
+    "test": "$play"
+  },
+  "author": "Argos",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.7.1"
+  }
+}
