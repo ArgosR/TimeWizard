@@ -1,0 +1,39 @@
+{
+  "compileOnSave": true,
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "old-src/**/*",
+    "test",
+    "**/*.spec.ts",
+    "dist",
+  ],
+  "compilerOptions": {
+    // Djs doesn't compile at this time 06/2022
+    "skipLibCheck": true,
+    "importHelpers": true,
+    "outDir": "./dist/",
+    "sourceMap": true,
+    //"inlineSources": true,
+    "declaration": false,
+    "module": "commonjs",
+    "target": "es2021",
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "types": [
+      "reflect-metadata",
+      "node",
+      "jest"
+    ],
+    "typeRoots": [
+      "node_modules/@types",
+      "old-src/@types"
+    ]
+  }
+}

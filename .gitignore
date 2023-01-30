@@ -1,0 +1,28 @@
+output.*
+config.json
+*.mp4
+*.mpg
+*.mp3
+node_modules/
+database/database_*
+*.png
+*.gif
+ex_*
+yarn-error.log
+.vscode
+.idea
+dist/
+.idea/
+*.snippet*
+coverage
+.env
+old-src/
+
+# Yarn 2. As we are not using PnP, we're not using the zero-install strategy
+.yarn/*
+!.yarn/releases/
+!.yarn/plugins/
+.pnp.*
+
+# Temporary, jobs are not used yet
+src/jobs
