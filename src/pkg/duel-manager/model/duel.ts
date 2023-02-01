@@ -1,10 +1,10 @@
 /** A duel can be either */
 export enum DuelState {
-  /** Being currently played */
+  /** Being currently played = 0*/
   PLAYING,
-  /** Being paused */
+  /** Being paused = 1 */
   PAUSED,
-  /** Being done */
+  /** Being done = 2 */
   FINISHED,
 }
 /**

@@ -12,6 +12,7 @@ import { DuelState, IDuel } from "../../../pkg/duel-manager/model/duel";
 @injectable()
 export class StartDuel implements ILeafCommand {
   readonly TRIGGER = "start";
+
   buildSchema(): SlashCommandSubcommandBuilder {
     // To start a duel, we gather the two opponents
     return new SlashCommandSubcommandBuilder()
@@ -55,10 +56,20 @@ export class StartDuel implements ILeafCommand {
       ],
       state: DuelState.PLAYING,
       channelId: context.channel.id,
-      timeLeft: 30 * 60, // 30 minutes
+      timeLeft: 5 * 60, // 5 minutes A MODIFIER A 50MIN
     };
     await this.duelMgr.save(duel);
+    this.logger.debug(
+      `Duel démarré entre ${first.username} et ${second.username} ; Etat du duel : ${duel.state}`
+    );
 
-    await context.editReply(`Duel started !`);
+    await context.editReply(`Duel lancé !
+    ${first.username}  | ${second.username}
+    8000  | 8000 `);
   }
+  /*TODO : aligner les pipes de séparation avec la ligne des LP (prendre la somme des length du pseudo de chaque joueur
+  Diviser par 2 puis retrancher 2
+    ajouter cette valeur en espace vide avant et après les LP, puis | idem après
+    Idem pour les noms des joueurs
+  */
 }
