@@ -21,7 +21,10 @@ export class RemoveLifepoints implements ILeafCommand {
           .setRequired(true)
       )
       .addNumberOption((value) =>
-        value.setName("value").setDescription("Valeur a enlever")
+        value
+          .setName("value")
+          .setDescription("Valeur a enlever")
+          .setRequired(true)
       );
   }
 
@@ -32,7 +35,6 @@ export class RemoveLifepoints implements ILeafCommand {
   ) {}
 
   async run(context: CommandInteraction): Promise<void> {
-    // TODO :: réussir à récupérer les LP actuels et les mettre à jour
     await context.deferReply();
 
     //joueur concerné
@@ -47,11 +49,11 @@ export class RemoveLifepoints implements ILeafCommand {
     if (liste_duel.length != 0) {
       const duel_enc = liste_duel[0];
 
-      //on récupère la valeur des LP du joueur actuel
+      //on récupère le joueur correspondant au user en paramètre
       const Joueur_actuel = duel_enc.players.find((p) => p.id == playerId);
 
       // on modifie les LP du joueur
-      Joueur_actuel.lp -= Number(valeur_true);
+      Joueur_actuel.lp = Math.max(Joueur_actuel.lp - Number(valeur_true), 0);
 
       // On met à jour le duel
       await this.duelMgr.save(duel_enc);
@@ -60,7 +62,7 @@ export class RemoveLifepoints implements ILeafCommand {
       );
       await context.deleteReply();
     } else {
-      await context.editReply(`Il n'y a pas de duel en cours pour ce joueur`);
+      await context.editReply(`Il n'y a pas de duel en cours pour ${player}`);
       return;
     }
 
