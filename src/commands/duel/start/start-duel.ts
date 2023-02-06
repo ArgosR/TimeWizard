@@ -56,7 +56,7 @@ export class StartDuel implements ILeafCommand {
       ],
       state: DuelState.PLAYING,
       channelId: context.channel.id,
-      timeLeft: 5 * 60, // 5 minutes A MODIFIER A 50MIN
+      timeLeft: 50 * 60, // 50MIN
     };
     await this.duelMgr.save(duel);
     this.logger.debug(
@@ -64,8 +64,7 @@ export class StartDuel implements ILeafCommand {
     );
 
     await context.editReply(`Duel lancé !
-    ${first.username}  | ${second.username}
-    8000  | 8000 `);
+${first.username}  | ${second.username} `);
   }
   /*TODO : aligner les pipes de séparation avec la ligne des LP (prendre la somme des length du pseudo de chaque joueur
   Diviser par 2 puis retrancher 2

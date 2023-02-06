@@ -84,9 +84,31 @@ export class DuelTimer implements ICoroutine {
       if (d.state === DuelState.PAUSED) return;
 
       let formatStr = "";
-      if (d.state === DuelState.PLAYING)
-        formatStr = `Time left : ${this.formatSeconds(d.timeLeft)}`;
-      else if (d.state === DuelState.FINISHED) formatStr = `Finished !`;
+      //On récupère les deux joueurs
+      const joueur_1 = d.players[0];
+      const joueur_2 = d.players[1];
+      //On récupère leurs LP actuels
+      const joueur_1LP = joueur_1.lp;
+      const joueur_2LP = joueur_2.lp;
+      // on vérifie que les LP des joueurs sont toujours au dessus de 0, sinon on arrête le duel
+      if (joueur_1LP == 0 || joueur_2LP == 0) {
+        //this.logger.debug("on est dans la boucle : un des joueurs à 0 LP");
+        d.state = DuelState.FINISHED;
+        await this.duelMgr.save(d);
+      }
+
+      /*TODO : on veut récupérer la taille du pseudo du premier joueur pour avoir un affichage uniforme
+        const user1 = joueur_1.id.fetch();
+        const lg_us1 = user1.username.length()-joueur_1LP.tostring().length();
+
+        
+      */
+
+      if (d.state === DuelState.PLAYING) {
+        formatStr = `${joueur_1LP}  | ${joueur_2LP}
+Temps restant : ${this.formatSeconds(d.timeLeft)}
+        `;
+      } else if (d.state === DuelState.FINISHED) formatStr = `Terminé !`;
       // We can either create a message or edit one
       if (d.timerMessageId === undefined) {
         // In case of a new message, we make sure to reflect this change in the cache
@@ -132,6 +154,7 @@ export class DuelTimer implements ICoroutine {
     const minutes = Math.floor((s - hours * 3600) / 60);
     const seconds = Math.floor(s - hours * 3600 - minutes * 60);
     const prefix = (n: number) => (n < 10 ? `0${n}` : n);
-    return `${prefix(hours)}:${prefix(minutes)}:${prefix(seconds)}`;
+    return `${prefix(minutes)}min ${prefix(seconds)}s`;
+    //return `${prefix(hours)}:${prefix(minutes)}:${prefix(seconds)}`;
   }
 }
