@@ -56,19 +56,19 @@ export class StartDuel implements ILeafCommand {
       ],
       state: DuelState.PLAYING,
       channelId: context.channel.id,
-      timeLeft: 50 * 60, // 50MIN
+      timeLeft: 26 * 60, // 50MIN
     };
     await this.duelMgr.save(duel);
     this.logger.debug(
       `Duel démarré entre ${first.username} et ${second.username} ; Etat du duel : ${duel.state}`
     );
+    //permet d'aligner le score et les pseudos
+    let lg_espace = "";
+    for (let i = 0; i < duel.players[1].lp.toString().length; i++) {
+      lg_espace = " " + lg_espace;
+    }
 
     await context.editReply(`Duel lancé !
-${first.username}  | ${second.username} `);
+${lg_espace}${first.username} | ${second.username} `);
   }
-  /*TODO : aligner les pipes de séparation avec la ligne des LP (prendre la somme des length du pseudo de chaque joueur
-  Diviser par 2 puis retrancher 2
-    ajouter cette valeur en espace vide avant et après les LP, puis | idem après
-    Idem pour les noms des joueurs
-  */
 }

@@ -57,8 +57,11 @@ export class DuelTimer implements ICoroutine {
         const diffSec = Math.abs(currDate - d.lastUpdated) / 1000;
         // And remove it from the timeLeft for the duel
         d.timeLeft = Math.max(0, d.timeLeft - diffSec);
-        // If it hits 0, the duel is finished
-        if (d.timeLeft === 0) d.state = DuelState.FINISHED;
+        // If it hits 0 OR Lp=0, the duel is finished
+
+        if (d.timeLeft === 0 || d.players.some((p) => p.lp == 0))
+          d.state = DuelState.FINISHED;
+
         d.lastUpdated = currDate;
       }
       // And save the changes
@@ -70,7 +73,7 @@ export class DuelTimer implements ICoroutine {
   }
 
   /**
-   * Update the timer in each discord channel for ecah duel
+   * Update the timer in each discord channel for each duel
    * @param duels
    */
   async notifyChannels(duels: IDuel[]) {
@@ -84,30 +87,48 @@ export class DuelTimer implements ICoroutine {
       if (d.state === DuelState.PAUSED) return;
 
       let formatStr = "";
-      //On récupère les deux joueurs
-      const joueur_1 = d.players[0];
-      const joueur_2 = d.players[1];
-      //On récupère leurs LP actuels
-      const joueur_1LP = joueur_1.lp;
-      const joueur_2LP = joueur_2.lp;
-      // on vérifie que les LP des joueurs sont toujours au dessus de 0, sinon on arrête le duel
-      if (joueur_1LP == 0 || joueur_2LP == 0) {
-        //this.logger.debug("on est dans la boucle : un des joueurs à 0 LP");
-        d.state = DuelState.FINISHED;
-        await this.duelMgr.save(d);
-      }
 
       /*TODO : on veut récupérer la taille du pseudo du premier joueur pour avoir un affichage uniforme
-        const user1 = joueur_1.id.fetch();
-        const lg_us1 = user1.username.length()-joueur_1LP.tostring().length();
-
         
       */
+      // on a l'ID du joueur
+      const iduser1 = d.players.find((p) => p.id).id;
+      // on veut le user qui correspond a cet ID
+      const user = await disc.users.fetch(iduser1);
+      //on récupère le username
+      const nom_user = user.username;
+
+      //on créé une chaine remplie d'espace pour l'affichage
+      let lg_espace = "";
+      for (let i = 0; i < nom_user.length; i++) {
+        lg_espace = " " + lg_espace;
+      }
+
+      this.logger.debug(`${nom_user} ; ${lg_espace}:${lg_espace.length}`);
 
       if (d.state === DuelState.PLAYING) {
-        formatStr = `${joueur_1LP}  | ${joueur_2LP}
+        //alerte 5 min restante
+        if (d.timeLeft > 5 * 60 - 4 && d.timeLeft < 5 * 60 + 4) {
+          this.logger.debug(`il reste 5 min`);
+          //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
+          formatStr = `${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
 Temps restant : ${this.formatSeconds(d.timeLeft)}
-        `;
+IL NE RESTE QUE 5 MIN ${user}
+                `;
+          //alerte 25 min restante
+        } else if (d.timeLeft > 25 * 60 - 4 && d.timeLeft < 25 * 60 + 4) {
+          this.logger.debug(`il reste 25 min`);
+          //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
+          formatStr = `${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
+Temps restant : ${this.formatSeconds(d.timeLeft)}
+Nous sommes à la moitié du temps ${user}
+           `;
+        } else {
+          //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
+          formatStr = `${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
+Temps restant : ${this.formatSeconds(d.timeLeft)}
+           `;
+        }
       } else if (d.state === DuelState.FINISHED) formatStr = `Terminé !`;
       // We can either create a message or edit one
       if (d.timerMessageId === undefined) {
@@ -146,7 +167,7 @@ Temps restant : ${this.formatSeconds(d.timeLeft)}
   }
 
   /***
-   * Format a number of seconds to hh:mm:ss format
+   * Format a number of seconds to mm "min" ss "s" format
    * @param s
    */
   formatSeconds(s: number): string {
@@ -155,6 +176,5 @@ Temps restant : ${this.formatSeconds(d.timeLeft)}
     const seconds = Math.floor(s - hours * 3600 - minutes * 60);
     const prefix = (n: number) => (n < 10 ? `0${n}` : n);
     return `${prefix(minutes)}min ${prefix(seconds)}s`;
-    //return `${prefix(hours)}:${prefix(minutes)}:${prefix(seconds)}`;
   }
 }
