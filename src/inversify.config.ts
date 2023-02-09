@@ -28,6 +28,7 @@ import { NodeDuelLifepoints } from "./commands/duel/lifepoints/lifepoints-edit-c
 import { AddLifepoints } from "./commands/duel/lifepoints/add/add-lifepoints";
 import { RemoveLifepoints } from "./commands/duel/lifepoints/remove/remove-lifepoints";
 import { EndDuel } from "./commands/duel/end/end-duel";
+import { PauseDuel } from "./commands/duel/pause/pause";
 
 export const container = new Container();
 decorate(injectable(), EventEmitter);
@@ -145,6 +146,12 @@ container
 container
   .bind<ILeafCommand>(TYPES.CommandLeaf)
   .to(EndDuel)
+  .whenTargetNamed(COMMANDS_TAGS.SubDuel);
+
+// Duel -> Pause
+container
+  .bind<ILeafCommand>(TYPES.CommandLeaf)
+  .to(PauseDuel)
   .whenTargetNamed(COMMANDS_TAGS.SubDuel);
 
 container.bind<ICommandMatcher>(TYPES.CommandMatcher).to(CommandMatcher);

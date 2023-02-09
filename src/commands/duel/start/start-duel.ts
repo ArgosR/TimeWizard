@@ -56,7 +56,7 @@ export class StartDuel implements ILeafCommand {
       ],
       state: DuelState.PLAYING,
       channelId: context.channel.id,
-      timeLeft: 26 * 60, // 50MIN
+      timeLeft: 50 * 60, // 50MIN
     };
     await this.duelMgr.save(duel);
     this.logger.debug(
