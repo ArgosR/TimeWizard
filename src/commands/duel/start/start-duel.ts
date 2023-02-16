@@ -23,6 +23,9 @@ export class StartDuel implements ILeafCommand {
       )
       .addUserOption((p) =>
         p.setName("p2").setDescription("Second Player").setRequired(true)
+      )
+      .addNumberOption((t) =>
+        t.setName("time").setDescription("Time for the duel in minutes")
       );
   }
 
@@ -49,6 +52,8 @@ export class StartDuel implements ILeafCommand {
       return;
     }
 
+    const temps = (await context.options.getNumber("time")) ?? 50; // 50MIN par défaut
+    this.logger.debug(`Temps reçu par la commande ${temps}`);
     const duel: IDuel = {
       players: [
         { id: first.id, lp: 8000 },
@@ -56,18 +61,23 @@ export class StartDuel implements ILeafCommand {
       ],
       state: DuelState.PLAYING,
       channelId: context.channel.id,
-      timeLeft: 50 * 60, // 50MIN
+      timeLeft: temps * 60,
+      notifyAt: [(temps / 2) * 60, (temps / 10) * 60], //par défaut, on notifie a 25min et 5min
     };
     await this.duelMgr.save(duel);
     this.logger.debug(
-      `Duel démarré entre ${first.username} et ${second.username} ; Etat du duel : ${duel.state}`
+      `Duel démarré entre ${first.username} et ${second.username} ; Etat du duel : ${duel.state} ; temps : ${duel.timeLeft}
+      ${duel.notifyAt[0]} ;${duel.notifyAt[1]}`
     );
     //permet d'aligner le score et les pseudos
-    let lg_espace = "";
-    for (let i = 0; i < duel.players[1].lp.toString().length; i++) {
-      lg_espace = " " + lg_espace;
-    }
 
+    let lg_espace = "  ";
+
+    if (first.username.length < 7) {
+      lg_espace = lg_espace.repeat(first.username.length - 2);
+    } else if (first.username.length == 7) {
+      lg_espace = "";
+    }
     await context.editReply(`Duel lancé !
 ${lg_espace}${first.username} | ${second.username} `);
   }

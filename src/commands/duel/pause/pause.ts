@@ -48,11 +48,11 @@ export class PauseDuel implements ILeafCommand {
             //on notifie
             if (player == null) {
               await context.editReply(`Ton duel est relancé.`);
-              context.deleteReply();
+              //context.deleteReply();
               this.logger.debug(`Le duel du lanceur est relancé.`);
             } else {
               await context.editReply(`Le duel de ${player} est relancé.`);
-              context.deleteReply();
+              //context.deleteReply();
               this.logger.debug(`Le duel de ${player} est relancé.`);
             }
           }
@@ -74,6 +74,11 @@ export class PauseDuel implements ILeafCommand {
             }
           }
           break;
+
+        default: {
+          this.logger.warn(`On a tenté de mettre en pause un duel terminé.`);
+          break;
+        }
       }
     } else {
       if (player == null) {

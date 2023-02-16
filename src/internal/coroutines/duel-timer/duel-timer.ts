@@ -92,44 +92,52 @@ export class DuelTimer implements ICoroutine {
         
       */
       // on a l'ID du joueur
-      const iduser1 = d.players.find((p) => p.id).id;
-      // on veut le user qui correspond a cet ID
+      const iduser1 = d.players[0].id;
+      // user discord qui correspond a cet ID
       const user = await disc.users.fetch(iduser1);
+
+      // on a l'ID du joueur 2
+      const iduser2 = d.players[1].id;
+      // user discord qui correspond a cet ID
+      const user2 = await disc.users.fetch(iduser2);
+
       //on récupère le username
       const nom_user = user.username;
 
       //on créé une chaine remplie d'espace pour l'affichage
-      let lg_espace = "";
-      for (let i = 0; i < nom_user.length; i++) {
-        lg_espace = " " + lg_espace;
+      let lg_espace = "  ";
+      if (nom_user.length >= 7) {
+        lg_espace = lg_espace.repeat(nom_user.length - 5);
+        this.logger.debug(
+          `Le nom ${nom_user} est égal à 7 ou + ; ${nom_user.length}`
+        );
       }
 
-      this.logger.debug(`${nom_user} ; ${lg_espace}:${lg_espace.length}`);
-
       if (d.state === DuelState.PLAYING) {
-        //alerte 5 min restante
-        if (d.timeLeft > 5 * 60 - 4 && d.timeLeft < 5 * 60 + 4) {
-          this.logger.debug(`il reste 5 min`);
+        //this.logger.debug(`Réponse de has to notify : ${this.hasToNotify(d)}`);
+
+        if (this.hasToNotify(d)) {
+          this.logger.debug(`il reste ${this.formatSeconds(d.timeLeft)}`);
           //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
-          formatStr = `${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
-Temps restant : ${this.formatSeconds(d.timeLeft)}
-IL NE RESTE QUE 5 MIN ${user}
-                `;
-          //alerte 25 min restante
-        } else if (d.timeLeft > 25 * 60 - 4 && d.timeLeft < 25 * 60 + 4) {
-          this.logger.debug(`il reste 25 min`);
-          //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
-          formatStr = `${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
-Temps restant : ${this.formatSeconds(d.timeLeft)}
-Nous sommes à la moitié du temps ${user}
-           `;
+          formatStr = `=>${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
+IL NE RESTE QUE ${this.formatSeconds(d.timeLeft)} ${user} ${user2}!`;
+          disc.users.send(
+            user,
+            `IL NE RESTE QUE ${this.formatSeconds(d.timeLeft)} ${user} !`
+          );
+          disc.users.send(
+            user2,
+            `IL NE RESTE QUE ${this.formatSeconds(d.timeLeft)} ${user2} !`
+          );
         } else {
           //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
-          formatStr = `${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
-Temps restant : ${this.formatSeconds(d.timeLeft)}
-           `;
+          formatStr = `=>${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
+
+Temps restant : ${this.formatSeconds(d.timeLeft)}`;
         }
-      } else if (d.state === DuelState.FINISHED) formatStr = `Terminé !`;
+      } else if (d.state === DuelState.FINISHED)
+        formatStr = `=>${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
+Temps écoulé !`;
       // We can either create a message or edit one
       if (d.timerMessageId === undefined) {
         // In case of a new message, we make sure to reflect this change in the cache
@@ -177,4 +185,53 @@ Temps restant : ${this.formatSeconds(d.timeLeft)}
     const prefix = (n: number) => (n < 10 ? `0${n}` : n);
     return `${prefix(minutes)}min ${prefix(seconds)}s`;
   }
+
+  /***
+   * Return true if the user must be notified
+   * @param d
+   */
+  hasToNotify(d: IDuel): boolean {
+    if (!d.notifyAt) return false;
+
+    //On veut notifier l'utilisateur seulement une fois entre deux tick de mise à jour
+    //On utilise un intervalle de confiance delta pour gérer les bornes de temps
+    const delta = 2 * 1000;
+    const deltaInterval = (DuelTimer.INTERVAL - delta) / 1000;
+
+    return d.notifyAt.some(
+      (t) => t - deltaInterval < d.timeLeft && t + deltaInterval > d.timeLeft
+    );
+  }
 }
+
+/* OLD
+        //alerte 5 min restante
+        if (
+          d.timeLeft > 5 * 60 - deltaInterval &&
+          d.timeLeft < 5 * 60 + deltaInterval
+        ) {
+          this.logger.debug(`il reste 5 min`);
+          //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
+          formatStr = `${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
+Temps restant : ${this.formatSeconds(d.timeLeft)}
+IL NE RESTE QUE 5 MIN ${user}
+                `;
+          //alerte 25 min restante
+        } else if (
+          d.timeLeft > 25 * 60 - deltaInterval &&
+          d.timeLeft < 25 * 60 + deltaInterval
+        ) {
+          this.logger.debug(`il reste 25 min`);
+          //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
+          formatStr = `${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
+Temps restant : ${this.formatSeconds(d.timeLeft)}
+Nous sommes à la moitié du temps ${user}
+           `;
+                   } else {
+          //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
+          formatStr = `${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
+Temps restant : ${this.formatSeconds(d.timeLeft)}
+           `;
+        }
+
+           */

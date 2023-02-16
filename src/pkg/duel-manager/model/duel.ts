@@ -40,6 +40,12 @@ export interface IDuel {
    * ID of the message containing the current timer
    */
   timerMessageId?: string;
+
+  /**
+   * array which contains numbers ; each number is the value in seconds
+   * indicating when the user wants to be notified
+   */
+  notifyAt?: number[];
 }
 
 export interface IPlayer {
