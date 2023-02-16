@@ -4,7 +4,7 @@ import { TYPES } from "../../../types";
 import { ILogger } from "../../../pkg/logger/logger-api";
 import { IDuelManager } from "../../../pkg/duel-manager/duel-manager.api";
 import { CommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
-import { DuelState, IDuel } from "../../../pkg/duel-manager/model/duel";
+import { DuelState } from "../../../pkg/duel-manager/model/duel";
 
 @injectable()
 export class EndDuel implements ILeafCommand {
