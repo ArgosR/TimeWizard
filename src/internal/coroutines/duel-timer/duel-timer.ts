@@ -88,55 +88,68 @@ export class DuelTimer implements ICoroutine {
 
       let formatStr = "";
 
-      /*TODO : on veut récupérer la taille du pseudo du premier joueur pour avoir un affichage uniforme
-        
-      */
-      // on a l'ID du joueur
+      // const idUsers = d.players.map((p) => p.id);
+      //const listeUsers = idUsers.map((p) => disc.users.fetch(p));
+      const usersPromises = d.players.map(
+        async (p) => await disc.users.fetch(p.id)
+      );
+
+      /* A DELETE
+       */
+      //on a l'ID du joueur
       const iduser1 = d.players[0].id;
       // user discord qui correspond a cet ID
       const user = await disc.users.fetch(iduser1);
-
+      /* A DELETE
+       */
       // on a l'ID du joueur 2
       const iduser2 = d.players[1].id;
-      // user discord qui correspond a cet ID
+      //user discord qui correspond a cet ID
       const user2 = await disc.users.fetch(iduser2);
 
       //on récupère le username
-      const nom_user = user.username;
+      const noms_users = usersPromises.map(
+        async (p) => await (await disc.users.fetch((await p).username)).username
+      );
 
       //on créé une chaine remplie d'espace pour l'affichage
       let lg_espace = "  ";
-      if (nom_user.length >= 7) {
-        lg_espace = lg_espace.repeat(nom_user.length - 5);
+      //la longueur a partir de laquelle un pseudo est trop court pour avoir besoin d'être bougé
+      const minLongueurPseudo = 7;
+      // cette valeur corrige l'approximation faite pour l'alignement en cas de long pseudo
+      const reductionNbRepeat = 5;
+
+      if ((await noms_users.at(0)).length >= minLongueurPseudo) {
+        lg_espace = lg_espace.repeat(noms_users.length - reductionNbRepeat);
         this.logger.debug(
-          `Le nom ${nom_user} est égal à 7 ou + ; ${nom_user.length}`
+          `Le nom ${noms_users} est égal à ${minLongueurPseudo} ou + ; ${noms_users.length}`
         );
       }
 
-      if (d.state === DuelState.PLAYING) {
-        //this.logger.debug(`Réponse de has to notify : ${this.hasToNotify(d)}`);
+      //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
+      const affichageLP = `${lg_espace}${d.players
+        .map((p) => p.lp)
+        .join(" | ")}`;
 
+      if (d.state === DuelState.PLAYING) {
         if (this.hasToNotify(d)) {
-          this.logger.debug(`il reste ${this.formatSeconds(d.timeLeft)}`);
-          //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
-          formatStr = `=>${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
+          formatStr = `=>${affichageLP}
+
 IL NE RESTE QUE ${this.formatSeconds(d.timeLeft)} ${user} ${user2}!`;
-          disc.users.send(
-            user,
-            `IL NE RESTE QUE ${this.formatSeconds(d.timeLeft)} ${user} !`
-          );
-          disc.users.send(
-            user2,
-            `IL NE RESTE QUE ${this.formatSeconds(d.timeLeft)} ${user2} !`
-          );
+
+          await usersPromises.forEach(async (pj) => {
+            disc.users.send(
+              await pj,
+              `IL NE RESTE QUE ${this.formatSeconds(d.timeLeft)} ${pj} !`
+            );
+          });
         } else {
-          //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
-          formatStr = `=>${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
+          formatStr = `${affichageLP}
 
 Temps restant : ${this.formatSeconds(d.timeLeft)}`;
         }
       } else if (d.state === DuelState.FINISHED)
-        formatStr = `=>${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
+        formatStr = `=>${affichageLP}
 Temps écoulé !`;
       // We can either create a message or edit one
       if (d.timerMessageId === undefined) {
@@ -203,35 +216,3 @@ Temps écoulé !`;
     );
   }
 }
-
-/* OLD
-        //alerte 5 min restante
-        if (
-          d.timeLeft > 5 * 60 - deltaInterval &&
-          d.timeLeft < 5 * 60 + deltaInterval
-        ) {
-          this.logger.debug(`il reste 5 min`);
-          //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
-          formatStr = `${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
-Temps restant : ${this.formatSeconds(d.timeLeft)}
-IL NE RESTE QUE 5 MIN ${user}
-                `;
-          //alerte 25 min restante
-        } else if (
-          d.timeLeft > 25 * 60 - deltaInterval &&
-          d.timeLeft < 25 * 60 + deltaInterval
-        ) {
-          this.logger.debug(`il reste 25 min`);
-          //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
-          formatStr = `${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
-Temps restant : ${this.formatSeconds(d.timeLeft)}
-Nous sommes à la moitié du temps ${user}
-           `;
-                   } else {
-          //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
-          formatStr = `${lg_espace}${d.players.map((p) => p.lp).join(" | ")}
-Temps restant : ${this.formatSeconds(d.timeLeft)}
-           `;
-        }
-
-           */
