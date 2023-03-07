@@ -71,14 +71,17 @@ export class StartDuel implements ILeafCommand {
     );
     //permet d'aligner le score et les pseudos
 
-    let lg_espace = "  ";
-
-    if (first.username.length < 7) {
-      lg_espace = lg_espace.repeat(first.username.length - 2);
-    } else if (first.username.length == 7) {
-      lg_espace = "";
+    const maxCHAR = 10;
+    let pseudal1 = first.username;
+    //let pseudal1 = "ps";
+    if (pseudal1.length > maxCHAR) {
+      pseudal1 = pseudal1.slice(0, maxCHAR - 3);
+      pseudal1 = pseudal1 + "[.]";
     }
+
+    pseudal1 = pseudal1.padStart(maxCHAR, " ");
+
     await context.editReply(`Duel lancé !
-${lg_espace}${first.username} | ${second.username} `);
+\u2800${pseudal1}\t|\t${second.username}`);
   }
 }

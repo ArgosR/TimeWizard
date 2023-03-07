@@ -35,6 +35,7 @@ export class ResetDuel implements ILeafCommand {
     //on récupère les duels avec ce joueur
     const liste_duel = await this.duelMgr.getFor(playerId);
 
+    //this.logger.debug(`début de fonction reset`);
     if (liste_duel.length != 0) {
       const duel_enc = liste_duel[0];
 
@@ -96,6 +97,7 @@ export class ResetDuel implements ILeafCommand {
 
         default: {
           this.logger.warn(`On a tenté de reset un duel terminé.`);
+          await context.editReply(`On a tenté de reset un duel terminé.`);
           break;
         }
       }
@@ -107,5 +109,6 @@ export class ResetDuel implements ILeafCommand {
       }
       return;
     }
+    //this.logger.debug(`Fin de fonction reset`);
   }
 }

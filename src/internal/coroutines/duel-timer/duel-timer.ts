@@ -90,46 +90,24 @@ export class DuelTimer implements ICoroutine {
 
       // const idUsers = d.players.map((p) => p.id);
       //const listeUsers = idUsers.map((p) => disc.users.fetch(p));
-      const usersPromises = d.players.map(
-        async (p) => await disc.users.fetch(p.id)
+      const usernames = await Promise.all(
+        d.players.map(async (p) => (await disc.users.fetch(p.id)).username)
       );
 
-      /* A DELETE
-       */
       //on a l'ID du joueur
       const iduser1 = d.players[0].id;
       // user discord qui correspond a cet ID
       const user = await disc.users.fetch(iduser1);
-      /* A DELETE
-       */
+
       // on a l'ID du joueur 2
       const iduser2 = d.players[1].id;
       //user discord qui correspond a cet ID
       const user2 = await disc.users.fetch(iduser2);
 
-      //on récupère le username
-      const noms_users = usersPromises.map(
-        async (p) => await (await disc.users.fetch((await p).username)).username
-      );
-
-      //on créé une chaine remplie d'espace pour l'affichage
-      let lg_espace = "  ";
-      //la longueur a partir de laquelle un pseudo est trop court pour avoir besoin d'être bougé
-      const minLongueurPseudo = 7;
-      // cette valeur corrige l'approximation faite pour l'alignement en cas de long pseudo
-      const reductionNbRepeat = 5;
-
-      if ((await noms_users.at(0)).length >= minLongueurPseudo) {
-        lg_espace = lg_espace.repeat(noms_users.length - reductionNbRepeat);
-        this.logger.debug(
-          `Le nom ${noms_users} est égal à ${minLongueurPseudo} ou + ; ${noms_users.length}`
-        );
-      }
-
       //pour chaque joueur, je ne garde que les LP (MAP) -> on sépare par un | (JOIN)
-      const affichageLP = `${lg_espace}${d.players
+      const affichageLP = `\u2800\t\t${d.players
         .map((p) => p.lp)
-        .join(" | ")}`;
+        .join("\t|\t")}`;
 
       if (d.state === DuelState.PLAYING) {
         if (this.hasToNotify(d)) {
@@ -137,9 +115,9 @@ export class DuelTimer implements ICoroutine {
 
 IL NE RESTE QUE ${this.formatSeconds(d.timeLeft)} ${user} ${user2}!`;
 
-          await usersPromises.forEach(async (pj) => {
+          usernames.forEach(async (pj) => {
             disc.users.send(
-              await pj,
+              pj,
               `IL NE RESTE QUE ${this.formatSeconds(d.timeLeft)} ${pj} !`
             );
           });
